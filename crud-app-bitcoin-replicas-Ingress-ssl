@@ -1,27 +1,13 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: crud-app
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: rolebinding-default-privileged-sa-ns_default
-  namespace: crud-app
-roleRef:
-  kind: ClusterRole
-  name: psp:vmware-system-privileged
-  apiGroup: rbac.authorization.k8s.io
-subjects:
-- kind: Group
-  apiGroup: rbac.authorization.k8s.io
-  name: system:serviceaccounts 
+  name: crud-app-bitcoin
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: bitcoin-service
-  namespace: crud-app
+  namespace: crud-app-bitcoin
 spec:
   selector:
     app: bitcoin
@@ -35,9 +21,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
     name: bitcoin
-    namespace: crud-app
+    namespace: crud-app-bitcoin
 spec:
-    replicas: 3
+    replicas: 2
     selector:
       matchLabels:
         app: bitcoin
@@ -53,10 +39,10 @@ spec:
               - containerPort: 80
             resources:
               requests:
-                cpu: 128m
+                cpu: 256m
                 memory: 512Mi
               limits:
-                cpu: 250m
+                cpu: 512m
                 memory: 1G
             env:
               - name: TZ
@@ -66,7 +52,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mongo-express-service
-  namespace: crud-app
+  namespace: crud-app-bitcoin
 spec:
   selector:
     app: mongo-express
@@ -81,7 +67,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: mongo-express
-  namespace: crud-app
+  namespace: crud-app-bitcoin
   labels:
     app: mongo-express
 spec:
@@ -98,13 +84,13 @@ spec:
         - name: ME_CONFIG_MONGODB_ADMINPASSWORD
           value: "1w2q3e4r5t6y"
         - name: ME_CONFIG_MONGODB_URL
-          value: "mongodb://root:1w2q3e4r5t6y@mongo-service.crud-app.svc.cluster.local:27017/"
+          value: "mongodb://root:1w2q3e4r5t6y@mongo-service.crud-app-bitcoin.svc.cluster.local:27017/"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: mongo-service
-  namespace: crud-app
+  namespace: crud-app-bitcoin
 spec:
   ports:
     - name: mongo
@@ -118,7 +104,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: mongo
-  namespace: crud-app
+  namespace: crud-app-bitcoin
   labels:
     app: mongo
 spec:
@@ -134,6 +120,7 @@ spec:
           value: "root"
         - name: MONGO_INITDB_ROOT_PASSWORD
           value: "1w2q3e4r5t6y"
+
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
