@@ -17,40 +17,36 @@ spec:
       port: 80
       targetPort: 80
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: bitcoin
-  namespace: crud-app-bitcoin
-  labels:
-    app: bitcoin
+    name: bitcoin
+    namespace: crud-app-bitcoin
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: bitcoin
-  template:
-    metadata:
-      labels:
+    replicas: 3
+    selector:
+      matchLabels:
         app: bitcoin
-    spec:
-      containers:
-        - name: bitcoin
-          image: unnamed22090/bitcoin_api
-          ports:
-            - name: bitcoin
-              containerPort: 80
-              protocol: TCP
-          env:
-            - name: TZ
-              value: "Asia/Bangkok"
-          resources:
+    template:
+      metadata:
+        labels:
+          app: bitcoin
+      spec:
+        containers:
+          - name: bitcoin
+            image: unnamed22090/bitcoin_api
+            ports:
+              - containerPort: 80
+            resources:
               requests:
-                cpu: 100m
-                memory: 128Mi
+                cpu: 128m
+                memory: 512Mi
               limits:
-                cpu: 250m
-                memory: 256Mi
+                cpu: 256m
+                memory: 1G
+            env:
+              - name: TZ
+                value: "Asia/Bangkok"
 ---
 apiVersion: v1
 kind: Service
@@ -128,7 +124,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: aks-helloworld-image
+  name: bitcoin
   annotations:
     kubernetes.io/ingress.class: azure/application-gateway
     appgw.ingress.kubernetes.io/appgw-ssl-certificate: "mysslcert"
@@ -143,6 +139,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: aks-helloworld-image
+                name: bitcoin
                 port:
                   number: 80
