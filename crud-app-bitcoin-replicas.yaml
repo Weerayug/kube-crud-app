@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: crud-app-bitcoin
+  name: crud-app
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: bitcoin-service
-  namespace: crud-app-bitcoin
+  namespace: crud-app
 spec:
   selector:
     app: bitcoin
@@ -17,46 +17,42 @@ spec:
       port: 80
       targetPort: 80
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: bitcoin
-  namespace: crud-app-bitcoin
-  labels:
-    app: bitcoin
+    name: bitcoin
+    namespace: crud-app
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: bitcoin
-  template:
-    metadata:
-      labels:
+    replicas: 3
+    selector:
+      matchLabels:
         app: bitcoin
-    spec:
-      containers:
-        - name: bitcoin
-          image: unnamed22090/bitcoin_api
-          ports:
-            - name: bitcoin
-              containerPort: 80
-              protocol: TCP
-          env:
-            - name: TZ
-              value: "Asia/Bangkok"
-          resources:
+    template:
+      metadata:
+        labels:
+          app: bitcoin
+      spec:
+        containers:
+          - name: bitcoin
+            image: unnamed22090/bitcoin_api
+            ports:
+              - containerPort: 80
+            resources:
               requests:
-                cpu: 100m
-                memory: 128Mi
+                cpu: 128m
+                memory: 512Mi
               limits:
-                cpu: 250m
-                memory: 256Mi
+                cpu: 256m
+                memory: 1G
+            env:
+              - name: TZ
+                value: "Asia/Bangkok"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: mongo-express-service
-  namespace: crud-app-bitcoin
+  namespace: crud-app
 spec:
   selector:
     app: mongo-express
@@ -71,7 +67,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: mongo-express
-  namespace: crud-app-bitcoin
+  namespace: crud-app
   labels:
     app: mongo-express
 spec:
@@ -88,13 +84,13 @@ spec:
         - name: ME_CONFIG_MONGODB_ADMINPASSWORD
           value: "1w2q3e4r5t6y"
         - name: ME_CONFIG_MONGODB_URL
-          value: "mongodb://root:1w2q3e4r5t6y@mongo-service.crud-app-bitcoin.svc.cluster.local:27017/"
+          value: "mongodb://root:1w2q3e4r5t6y@mongo-service.crud-app.svc.cluster.local:27017/"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: mongo-service
-  namespace: crud-app-bitcoin
+  namespace: crud-app
 spec:
   ports:
     - name: mongo
@@ -108,7 +104,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: mongo
-  namespace: crud-app-bitcoin
+  namespace: crud-app
   labels:
     app: mongo
 spec:
